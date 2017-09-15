@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+  redis1:
+    container_name: user_redis
+    image: redis
+    ports:
+      - "6379:6379"
+  redis2:
+    container_name: message_redis
+    image: redis
+    ports:
+      - "6380:6380"
