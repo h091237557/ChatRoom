@@ -1,31 +1,62 @@
-const net = require('net');
 const http = require('http');
-const HOST = '127.0.0.1';
-const PORT_CLIENT = '60000';
-const PORT_BUSS_SERVER = '60001';
+const fs  = require('fs');
+const path = require('path');
+const mime = require('mime');
 
+const PORT = '3000';
+let cache = {};
 
-const app = net.createServer((socket)=>{
-    socket.on('data', (data) => {
-        console.log('I received data from Business Server');
+function send404(response) {
+  response.writeHead(404, {'Content-Type': 'text/plain'});
+  response.write('Error 404: resource not found.');
+  response.end();
+}
+
+function sendFile(response, filePath, fileContents) {
+  response.writeHead(
+    200, 
+    {'content-type': mime.lookup(path.basename(filePath))}
+  );
+  response.end(fileContents);
+}
+
+function serveStatic(response, cache, absPath) {
+  if (cache[absPath]) {
+    sendFile(response, absPath, cache[absPath]);
+  } else {
+    fs.exists(absPath, function(exists) {
+      if (exists) {
+        fs.readFile(absPath, function(err, data) {
+          if (err) {
+            send404(response);
+          } else {
+            cache[absPath] = data;
+            sendFile(response, absPath, data);
+          }
+        });
+      } else {
+        send404(response);
+      }
     });
+  }
+}
 
-}).listen(PORT_BUSS_SERVER, HOST, () =>{
-    console.log('Message Server Open !');
+const server = http.createServer(function(request, response) {
+  let filePath;
+
+  if (request.url == '/') {
+    filePath = 'public/index.html';
+  } else {
+    filePath = 'public' + request.url;
+  }
+
+  const absPath = './' + filePath;
+  serveStatic(response, cache, absPath);
 });
 
-const websocket_app =  http.createServer((req,res) => {
-    res.write('hello');
-}).listen(PORT_CLIENT, HOST, () => {
+server.listen(3000, function() {
+  console.log("Server listening on port 3000.");
 });
 
-const io = require('socket.io')(websocket_app);
-io.on('connection', (socket) =>{
-    console.log('websocket connected');
-    socket.on('test', (data) => {
-        console.log('Receved' + data);
-    });
-
-});
-
-
+const chatServer = require('./lib/chat_server');
+chatServer.listen(server);

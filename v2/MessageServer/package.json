@@ -1,14 +1,10 @@
 {
-  "name": "messageserver",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "socket.io": "^2.0.3"
-  }
+    "name": "chartrooms",
+    "version": "0.0.1",
+    "description": "Minimalist multriroom chartrooms",
+    "dependencies": {
+        "jquery": "^3.2.1",
+        "mime": "~1.2.7",
+        "socket.io": "~0.9.6"
+    }
 }
